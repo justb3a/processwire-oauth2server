@@ -10,10 +10,6 @@ class Oauth2ServerConfig extends ModuleConfig {
    */
   public function getDefaults() {
     return array(
-      // 'clientId' => '',
-      // 'clientSecret' => '',
-      // 'redirectPage' => '',
-      // 'state' => '',
       'allowedGrantTypes' => array(),
       'expirationTime' => '86400',
     );
@@ -40,38 +36,6 @@ class Oauth2ServerConfig extends ModuleConfig {
   public function getInputfields() {
     $inputfields = parent::getInputfields();
 
-    // // field app ID
-    // $field = $this->modules->get('InputfieldText');
-    // $field->name = 'clientId';
-    // $field->label = __('Client ID');
-    // $field->columnWidth = 50;
-    // // $field->required = 1;
-    // $inputfields->add($field);
-
-    // // field app secret
-    // $field = $this->modules->get('InputfieldText');
-    // $field->name = 'clientSecret';
-    // $field->label = __('Client Secret');
-    // $field->columnWidth = 50;
-    // // $field->required = 1;
-    // $inputfields->add($field);
-
-    // // field redirectPage
-    // $field = $this->modules->get('InputfieldPageListSelect');
-    // $field->name = 'redirectPage';
-    // $field->label = __('Redirect to a specific page after getting authorization token.');
-    // $field->columnWidth = 50;
-    // // $field->required = 1;
-    // $inputfields->add($field);
-
-    // field state
-    // $field = $this->modules->get('InputfieldText');
-    // $field->name = 'state';
-    // $field->label = __('State');
-    // $field->columnWidth = 50;
-    // $field->required = 1;
-    // $inputfields->add($field);
-
     // expirationTime
     $field = $this->modules->get('InputfieldInteger');
     $field->name = 'expirationTime';
@@ -82,6 +46,7 @@ class Oauth2ServerConfig extends ModuleConfig {
     $field->columnWidth = 50;
     $inputfields->add($field);
 
+    // allowedGrantTypes
     $field = $this->modules->get('InputfieldAsmSelect');
     $field->attr('name', 'allowedGrantTypes');
     $field->label = $this->_('Which grant types should be added.');

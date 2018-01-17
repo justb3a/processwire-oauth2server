@@ -8,7 +8,7 @@ Integration of Brent Shaffer's [oauth2-server-php](https://github.com/bshaffer/o
 
 1. Install the module, it'll create some tables.
 2. Fill in module settings.
-3. Add the client directly to the database (table **oauth_clients**) *@maybe: set later via module settings?* 
+3. Add the client directly to the database (table **oauth_clients**)
 4. Add necessary templates
     - settings:
         - set **Content-Type** to `application/json` 
@@ -146,9 +146,3 @@ curl -u testclient:testpass http://pw.local/token/ -d 'grant_type=authorization_
 
 {"access_token":"975610c3807953fd4702218a8746fde0538a54ce","expires_in":3600,"token_type":"Bearer","scope":null,"refresh_token":"55b39b07c2f67368293425dd8bacbc4c29e3c5bb"}
 ```
-
-## @TODO:
-
-- remove invalid tokens (authorization_code, refresh and access)
-- user login
-- user logout: delete access and refresh token

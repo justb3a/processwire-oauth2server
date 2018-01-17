@@ -32,7 +32,7 @@
             "predis/predis": "Required to use Redis storage",
             "thobbs/phpcassa": "Required to use Cassandra storage"
         },
-        "time": "2017-11-15 01:41:02",
+        "time": "2017-11-15T01:41:02+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

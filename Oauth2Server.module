@@ -22,6 +22,7 @@ use \OAuth2;
  */
 class Oauth2Server extends WireData implements Module, ConfigurableModule {
 
+  const CACHE_KEY = 'Module.Qauth2Server__%s';
   const STATE = 'test';
 
   /**
@@ -51,7 +52,38 @@ class Oauth2Server extends WireData implements Module, ConfigurableModule {
   public function init() {
     require(/*NoCompile*/__DIR__ . '/vendor/autoload.php');
     require(__DIR__ . '/PdoStorage.php');
+
     $this->bootstrapOAuth2Server();
+    $this->cleanUpDb();
+  }
+
+  /**
+   * clean up database
+   */
+  private function cleanUpDb() {
+    $pageHash = md5($this->config->userAuthSalt . $this->page->id);
+    $cacheKey = sprintf(self::CACHE_KEY, $pageHash);
+
+    // already cached?
+    $cleanedUp = $this->cache->get($cacheKey);
+
+    // if not, clean up and renew cache!
+    if (!$cleanupDb) {
+      // DO CLEANUP
+      $tables = array(
+        'oauth_access_tokens',
+        'oauth_authorization_codes',
+        'oauth_refresh_tokens'
+      );
+
+      foreach ($tables as $table) {
+        $table = $this->database->escapeTable($table);
+        $query = $this->database->prepare("DELETE FROM `$table` WHERE expires < NOW()");
+        $query->execute();
+      }
+
+      $this->cache->save($cacheKey, 'cleaned up', WireCache::expireDaily);
+    }
   }
 
   /**
