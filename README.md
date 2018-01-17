@@ -7,39 +7,48 @@ Integration of Brent Shaffer's [oauth2-server-php](https://github.com/bshaffer/o
 ## Installation
 
 1. Install the module, it'll create some tables.
-2. Add the client directly to the database (table **oauth_clients**) *@maybe: set later via module settings?* 
-3. Add necessary templates
+2. Fill in module settings.
+3. Add the client directly to the database (table **oauth_clients**) *@maybe: set later via module settings?* 
+4. Add necessary templates
     - settings:
         - set **Content-Type** to `application/json` 
         - disable automatic prepend and append file (tab *Files*)
     - templates:
         - token
-        - authorize
         - validate
-4. Create a page for each template.
+        - authorize (*optional*)
+5. Create a page for each template.
 
 ### Template content
 
-*@maybe: create templates and pages during installation progress*
-
-**authorize.php**
-
-```php
-echo $modules->get('Oauth2Server')->getAuthorizationCode();
-```
-
-**token.php**
+#### Receive an access token (`token.php`)
 
 ```php
 $modules->get('Oauth2Server')->getAccessToken();
 ```
 
-**validate.php**
+#### Validate an access token (`validate.php`)
 
 ```php
 echo $modules->get('Oauth2Server')->validateAccessToken();
 ```
 
+#### Get authorization code (`authorize.php`)
+
+```php
+echo $modules->get('Oauth2Server')->generateAuthorizationCode();
+```
+
+This method redirects back to the client (`redirect_uri` from `oauth_client`)
+by sending the generated authorization code as well as the submitted state which should be compared at the client side.
+
+If you want to test it server-side, create a page (and belonging template) to which the user gets redirected to.
+
+for example: `receive.php`
+
+```php
+echo $modules->get('Oauth2Server')->receiveAuthorizationCode();
+```
 
 ## Examples
 
@@ -54,25 +63,6 @@ echo $modules->get('Oauth2Server')->validateAccessToken();
 | client_secret | `testpass`        |
 | state         | `xyz`             |
 
-### – get authorization code
-
-**GET**
-
-```zsh
-curl 'http://pw.local/authorize/?response_type=code&client_id=testclient&state=xyz'
-
-{"success":true,"message":"SUCCESS! Authorization Code: bf867975b366d0ce1ec25287fba70930c00427c1"}
-```
-
-### – get access token using authorization code
-
-**POST**
-
-```zsh
-curl -u testclient:testpass http://pw.local/token/ -d 'grant_type=authorization_code&code={insert-code}'
-
-{"access_token":"975610c3807953fd4702218a8746fde0538a54ce","expires_in":3600,"token_type":"Bearer","scope":null,"refresh_token":"55b39b07c2f67368293425dd8bacbc4c29e3c5bb"}
-```
 
 ### – get access token using client credentials
 
@@ -126,11 +116,39 @@ curl http://pw.local/validate/ -d 'access_token={your-token}'
 
 ```
 
+### – get authorization code
+
+**GET**
+
+```zsh
+curl 'http://pw.local/authorize/?response_type=code&client_id=testclient&state={state}'
+
+// redirect back to the client
+```
+
+### – receive authorization code (only for testing purposes!)
+
+**GET**
+
+```zsh
+curl 'http://pw.local/receive/?code=10b0f51c6ae43e31226e01043cac1f257f058df4&state=test'
+
+{"success":true,"code":"10b0f51c6ae43e31226e01043cac1f257f058df4"}
+{"success":false,"error_description":"Invalid state."}
+```
+
+### – get access token using authorization code
+
+**POST**
+
+```zsh
+curl -u testclient:testpass http://pw.local/token/ -d 'grant_type=authorization_code&code={insert-code}'
+
+{"access_token":"975610c3807953fd4702218a8746fde0538a54ce","expires_in":3600,"token_type":"Bearer","scope":null,"refresh_token":"55b39b07c2f67368293425dd8bacbc4c29e3c5bb"}
+```
+
 ## @TODO:
 
 - remove invalid tokens (authorization_code, refresh and access)
 - user login
 - user logout: delete access and refresh token
-- access token lifetime
-- scope handling
-

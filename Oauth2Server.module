@@ -10,7 +10,6 @@ use \OAuth2;
  * ProcessWire 3.x
  * Licensed under GNU/GPL v2, see LICENSE.TXT
  *
- *
  * @author Tabea David <info@justb3a.de>
  * @version 0.0.1
  * @copyright Copyright (c) 2018 justb3a.de, <info@justb3a.de>
@@ -23,6 +22,8 @@ use \OAuth2;
  */
 class Oauth2Server extends WireData implements Module, ConfigurableModule {
 
+  const STATE = 'test';
+
   /**
    * Retrieves module meta data
    * Implementation of the Module interface
@@ -34,8 +35,7 @@ class Oauth2Server extends WireData implements Module, ConfigurableModule {
       'title' => 'OAuth 2 Server',
       'summary' => 'Integration of Brent Shaffer\'s oauth2-server-php',
       'version' => 001,
-      'href' => 'https://github.com/justb3a/processwire-oauth2',
-      // 'autoload' => true,
+      'href' => 'https://github.com/justb3a/processwire-oauth2server',
       'icon' => 'handshake-o'
     );
   }
@@ -62,22 +62,38 @@ class Oauth2Server extends WireData implements Module, ConfigurableModule {
     OAuth2\Autoloader::register();
 
     $storage = new PdoStorage();
-    $options = array('always_issue_new_refresh_token' => true);
+    $serverConfig = array('access_lifetime' => $this->expirationTime);
 
     // Pass a storage object or array of storage objects to the OAuth2 server class
-    $this->server = new OAuth2\Server($storage);
+    $this->server = new OAuth2\Server($storage, $serverConfig);
 
-    // Add the "Client Credentials" grant type (it is the simplest of the grant types)
-    $this->server->addGrantType(new OAuth2\GrantType\ClientCredentials($storage));
+    // do not set all grant types, choose via config
+    if (count($this->allowedGrantTypes)) {
+      foreach ($this->allowedGrantTypes as $val) {
+        switch ($val) {
+          case 'user_credentials':
+            // add the grant type to your OAuth server
+            $this->server->addGrantType(new OAuth2\GrantType\UserCredentials($storage));
+            break;
 
-    // Add the "Authorization Code" grant type (this is where the oauth magic happens)
-    $this->server->addGrantType(new OAuth2\GrantType\AuthorizationCode($storage));
+          case 'client_credentials':
+            // add the "Client Credentials" grant type (it is the simplest of the grant types)
+            $this->server->addGrantType(new OAuth2\GrantType\ClientCredentials($storage));
+            break;
 
-    // add the grant type to your OAuth server
-    $this->server->addGrantType(new OAuth2\GrantType\RefreshToken($storage, $options));
+          case 'refresh_token':
+            // add the grant type to your OAuth server
+            $refreshTokenConfig = array('always_issue_new_refresh_token' => true);
+            $this->server->addGrantType(new OAuth2\GrantType\RefreshToken($storage, $refreshTokenConfig));
+            break;
 
-    // add the grant type to your OAuth server
-    $this->server->addGrantType(new OAuth2\GrantType\UserCredentials($storage));
+          case 'authorization_code':
+            // add the "Authorization Code" grant type (this is where the oauth magic happens)
+            $this->server->addGrantType(new OAuth2\GrantType\AuthorizationCode($storage));
+            break;
+        }
+      }
+    }
   }
 
   /**
@@ -111,25 +127,35 @@ class Oauth2Server extends WireData implements Module, ConfigurableModule {
    * only issue a token once the user has authorized the request
    * http://localhost/authorize.php?response_type=code&client_id=testclient&state=xyz
    */
-  public function getAuthorizationCode() {
+  public function generateAuthorizationCode() {
     $request = OAuth2\Request::createFromGlobals();
     $response = new OAuth2\Response();
 
     // validate the authorize request
-    if (!$this->server->validateAuthorizeRequest($request, $response)) {
-      $response->send();
-      return json_encode(array('success' => false, 'message' => 'dedümm authorization code'));
+    if ($this->server->validateAuthorizeRequest($request, $response)) {
+      // print the authorization code if the user has authorized your client
+      $this->server->handleAuthorizeRequest($request, $response, true);
     }
 
-    // print the authorization code if the user has authorized your client
-    $this->server->handleAuthorizeRequest($request, $response, true);
+    $response->send();
+  }
 
-    // this is only here so that you get to see your code in the cURL request. Otherwise, we'd redirect back to the client
-    $code = substr($response->getHttpHeader('Location'), strpos($response->getHttpHeader('Location'), 'code=') + 5, 40);
+  /**
+   * Receive Authorization Code
+   *
+   * this ist just an example:
+   * this is only here so that you get to see your code in the cURL request. Otherwise, we'd redirect back to the client
+   * this must be implemented on the client side
+   */
+  public function receiveAuthorizationCode() {
+    // GET code and check state
+    if ($this->input->get->code && self::STATE === $this->input->get->state) {
+      $res = array('success' => true, 'code' => $this->input->get->code);
+    } else {
+      $res = array('success' => false, 'error_description' => 'Invalid state.');
+    }
 
-    return json_encode(array('success' => true, 'message' => "SUCCESS! Authorization Code: $code"));
-
-    // $response->send();
+    return json_encode($res);
   }
 
   /**
@@ -152,7 +178,7 @@ class Oauth2Server extends WireData implements Module, ConfigurableModule {
 
       $fieldSql = [];
       foreach ($data->fields as $fname => $fset) {
-        $fieldSql[] = "{$fname} {$fset}"; // @Ringo :)
+        $fieldSql[] = "{$fname} {$fset}";
       }
 
       $sql .= "CREATE TABLE `$table` ( " . implode(', ', $fieldSql);
@@ -162,6 +188,9 @@ class Oauth2Server extends WireData implements Module, ConfigurableModule {
     return $sql;
   }
 
+  /**
+   * Install routine
+   */
   public function ___install() {
     // define your Schema
     $database = $this->wire('database');

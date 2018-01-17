@@ -2,7 +2,6 @@
 
 require(/*NoCompile*/__DIR__ . '/vendor/autoload.php');
 
-use \OAuth2;
 use \OAuth2\Storage\Pdo as Storage;
 
 /**
