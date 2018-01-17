@@ -7,7 +7,7 @@
       "redirect_uri": "VARCHAR(2000)",
       "grant_types": "VARCHAR(80)",
       "scope": "VARCHAR(4000)",
-      "user_id": "VARCHAR(80)"
+      "user_id": "int(10) unsigned"
     }
   },
   {
@@ -15,7 +15,7 @@
     "fields": {
       "access_token": "VARCHAR(40) NOT NULL PRIMARY KEY",
       "client_id": "VARCHAR(80) NOT NULL",
-      "user_id": "VARCHAR(80)",
+      "user_id": "int(10) unsigned",
       "expires": "TIMESTAMP NOT NULL",
       "scope": "VARCHAR(4000)"
     }
@@ -25,7 +25,7 @@
     "fields": {
       "authorization_code": "VARCHAR(40) NOT NULL PRIMARY KEY",
       "client_id": "VARCHAR(80) NOT NULL",
-      "user_id": "VARCHAR(80)",
+      "user_id": "int(10) unsigned",
       "redirect_uri": "VARCHAR(2000)",
       "expires": "TIMESTAMP NOT NULL",
       "scope": "VARCHAR(4000)",
@@ -37,7 +37,7 @@
     "fields": {
       "refresh_token": "VARCHAR(40) NOT NULL PRIMARY KEY",
       "client_id": "VARCHAR(80) NOT NULL",
-      "user_id": "VARCHAR(80)",
+      "user_id": "int(10) unsigned",
       "expires": "TIMESTAMP NOT NULL",
       "scope": "VARCHAR(4000)"
     }

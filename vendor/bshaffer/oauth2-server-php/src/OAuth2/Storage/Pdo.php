@@ -91,6 +91,7 @@ class Pdo implements
      */
     public function checkClientCredentials($client_id, $client_secret = null)
     {
+
         $stmt = $this->db->prepare(sprintf('SELECT * from %s where client_id = :client_id', $this->config['client_table']));
         $stmt->execute(compact('client_id'));
         $result = $stmt->fetch(\PDO::FETCH_ASSOC);
