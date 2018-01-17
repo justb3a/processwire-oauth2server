@@ -47,33 +47,41 @@ echo $modules->get('Oauth2Server')->validateAccessToken();
 
 **Assumptions:**
 
-- base-url: `http://pw.local`
-- client_id: `testclient`
-- client_secret: `testpass`
-- state: `xyz`
+| key           | value             |
+|---------------|-------------------|
+| base-url      | `http://pw.local` |
+| client_id     | `testclient`      |
+| client_secret | `testpass`        |
+| state         | `xyz`             |
 
 ### get authorization code
 
 **GET**
 
-```css
+```json
 curl 'http://pw.local/authorize/?response_type=code&client_id=testclient&state=xyz'
+
+{"success":true,"message":"SUCCESS! Authorization Code: bf867975b366d0ce1ec25287fba70930c00427c1"}
 ```
 
 ### get access token using authorization code
 
 **POST**
 
-```css
+```json
 curl -u testclient:testpass http://pw.local/token/ -d 'grant_type=authorization_code&code={insert-code}'
+
+{"access_token":"975610c3807953fd4702218a8746fde0538a54ce","expires_in":3600,"token_type":"Bearer","scope":null,"refresh_token":"55b39b07c2f67368293425dd8bacbc4c29e3c5bb"}
 ```
 
 ### use refresh token
 
 **POST**
 
-```css
+```json
 curl -u testclient:testpass http://pw.local/token/ -d 'grant_type=refresh_token&refresh_token={inser-refresh_token}'
+
+{"access_token":"0ad2fd0746b49baee40364298b4f55edfd113efa","expires_in":3600,"token_type":"Bearer","scope":null,"refresh_token":"0c462a784e9bcce436bace2e706960f8f30e8024"}
 ```
 
 ## @TODO:
