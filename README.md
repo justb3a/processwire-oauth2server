@@ -74,6 +74,16 @@ curl -u testclient:testpass http://pw.local/token/ -d 'grant_type=authorization_
 {"access_token":"975610c3807953fd4702218a8746fde0538a54ce","expires_in":3600,"token_type":"Bearer","scope":null,"refresh_token":"55b39b07c2f67368293425dd8bacbc4c29e3c5bb"}
 ```
 
+### get access token using client credentials
+
+**POST**
+
+```json
+curl -u testclient:testpass http://pw.local/token/ -d 'grant_type=client_credentials'
+
+{"access_token":"42bf0bf090a8b367ff8ec7f58698810477aebca3","expires_in":3600,"token_type":"Bearer","scope":null}
+```
+
 ### use refresh token
 
 **POST**
