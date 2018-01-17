@@ -1,0 +1,186 @@
+<?php namespace ProcessWire;
+
+use \OAuth2;
+
+/**
+ * Oauth2Server
+ *
+ * See README.md for usage instructions.
+ *
+ * ProcessWire 3.x
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ *
+ *
+ * @author Tabea David <info@justb3a.de>
+ * @version 0.0.1
+ * @copyright Copyright (c) 2018 justb3a.de, <info@justb3a.de>
+ * @see https://github.com/justb3a/processwire-oauth2server
+ * @see http://www.processwire.com
+ */
+
+/**
+ * Class Oauth2Server
+ */
+class Oauth2Server extends WireData implements Module, ConfigurableModule {
+
+  /**
+   * Retrieves module meta data
+   * Implementation of the Module interface
+   *
+   * @return array
+   */
+  public static function getModuleInfo() {
+    return array(
+      'title' => 'OAuth 2 Server',
+      'summary' => 'Integration of Brent Shaffer\'s oauth2-server-php',
+      'version' => 001,
+      'href' => 'https://github.com/justb3a/processwire-oauth2',
+      // 'autoload' => true,
+      'icon' => 'handshake-o'
+    );
+  }
+
+  /**
+   * Initialize the module
+   *
+   * ProcessWire calls this when the module is loaded. For 'autoload' modules, this will be called
+   * when ProcessWire's API is ready. As a result, this is a good place to attach hooks.
+   *
+   * @param Template $template Template object holding the form's fields.
+   */
+  public function init() {
+    require(/*NoCompile*/__DIR__ . '/vendor/autoload.php');
+    $this->bootstrapOAuth2Server();
+  }
+
+  /**
+   * Bootstrap OAuth2 Server
+   * We need to create and configure our OAuth2 Server object
+   */
+  private function bootstrapOAuth2Server() {
+    OAuth2\Autoloader::register();
+
+    // $dsn is the Data Source Name for your database, for exmaple "mysql:dbname=my_oauth2_db;host=localhost"
+    $dsn = "mysql:dbname={$this->config->dbName};host={$this->config->dbHost}";
+    if ($this->config->dbPort) $dsn .= ";port={$this->config->dbPort}";
+
+    $storage = new OAuth2\Storage\Pdo(array(
+      'dsn' => $dsn,
+      'username' => $this->config->dbUser,
+      'password' => $this->config->dbPass
+    ));
+
+    $options = array(
+      'always_issue_new_refresh_token' => true
+    );
+
+    // Pass a storage object or array of storage objects to the OAuth2 server class
+    $this->server = new OAuth2\Server($storage);
+
+    // Add the "Client Credentials" grant type (it is the simplest of the grant types)
+    $this->server->addGrantType(new OAuth2\GrantType\ClientCredentials($storage));
+
+    // Add the "Authorization Code" grant type (this is where the oauth magic happens)
+    $this->server->addGrantType(new OAuth2\GrantType\AuthorizationCode($storage));
+
+    // add the grant type to your OAuth server
+    $this->server->addGrantType(new OAuth2\GrantType\RefreshToken($storage, $options));
+  }
+
+  /**
+   * Create Token Controller
+   *
+   * This is the URI which returns an OAuth2.0 Token to the client
+   * Handle a request for an OAuth2.0 Access Token and send the response to the client
+   */
+  public function getAccessToken() {
+    $this->server->handleTokenRequest(OAuth2\Request::createFromGlobals())->send();
+  }
+
+  /**
+   * Validate Access Token
+   *
+   * Handle a request to a resource and authenticate the access token
+   */
+  public function validateAccessToken() {
+    if (!$this->server->verifyResourceRequest(OAuth2\Request::createFromGlobals())) {
+      $this->server->getResponse()->send();
+      return json_encode(array('success' => false, 'message' => 'dedümm validate access token'));
+    }
+
+    return json_encode(array('success' => true, 'message' => 'You accessed my APIs!'));
+  }
+
+  /**
+   * Get Authorization Code
+   *
+   * Instead of issuing an Access Token straightaway
+   * only issue a token once the user has authorized the request
+   * http://localhost/authorize.php?response_type=code&client_id=testclient&state=xyz
+   */
+  public function getAuthorizationCode() {
+    $request = OAuth2\Request::createFromGlobals();
+    $response = new OAuth2\Response();
+
+    // validate the authorize request
+    if (!$this->server->validateAuthorizeRequest($request, $response)) {
+      $response->send();
+      return json_encode(array('success' => false, 'message' => 'dedümm authorization code'));
+    }
+
+    // print the authorization code if the user has authorized your client
+    $this->server->handleAuthorizeRequest($request, $response, true);
+
+    // this is only here so that you get to see your code in the cURL request. Otherwise, we'd redirect back to the client
+    $code = substr($response->getHttpHeader('Location'), strpos($response->getHttpHeader('Location'), 'code=') + 5, 40);
+
+    return json_encode(array('success' => true, 'message' => "SUCCESS! Authorization Code: $code"));
+
+    // $response->send();
+  }
+
+  /**
+   * Get table data from json file
+   */
+  private function getTableData() {
+    $fields_json = file_get_contents(__DIR__ . "/data/tables.json");
+    return json_decode($fields_json);
+  }
+
+  /**
+   * get sql for create table
+   */
+  private function getSql() {
+    $tables = $this->getTableData();
+    $sql = '';
+
+    foreach ($tables as $data) {
+      $table = $this->wire('database')->escapeTable($data->name);
+
+      $fieldSql = [];
+      foreach ($data->fields as $fname => $fset) {
+        $fieldSql[] = "{$fname} {$fset}"; // @Ringo :)
+      }
+
+      $sql .= "CREATE TABLE `$table` ( " . implode(', ', $fieldSql);
+      $sql .= ") ENGINE={$this->wire('config')->dbEngine} DEFAULT CHARSET=utf8; ";
+    }
+
+    return $sql;
+  }
+
+  public function ___install() {
+    // define your Schema
+    $database = $this->wire('database');
+    $sql = $this->getSql();
+
+    try {
+      $this->message('Creating tables', Notice::log);
+      $database->exec($sql);
+    } catch(Exception $e) {
+      $this->error($e->getMessage(), Notice::log);
+      return;
+    }
+  }
+
+}

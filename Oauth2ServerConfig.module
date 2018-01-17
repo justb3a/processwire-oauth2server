@@ -1,0 +1,75 @@
+<?php namespace ProcessWire;
+
+/**
+ * Class Oauth2ServerConfig
+ */
+class Oauth2ServerConfig extends ModuleConfig {
+
+  /**
+   * array Default config values
+   */
+  public function getDefaults() {
+    return array(
+      'clientId' => '',
+      'clientSecret' => '',
+      'redirectPage' => '',
+      'scope' => '',
+      'expirationTime' => '86400',
+    );
+  }
+
+  /**
+   * Retrieves the list of config input fields
+   * Implementation of the ConfigurableModule interface
+   *
+   * @return InputfieldWrapper
+   */
+  public function getInputfields() {
+    $inputfields = parent::getInputfields();
+
+    // // field app ID
+    // $field = $this->modules->get('InputfieldText');
+    // $field->name = 'clientId';
+    // $field->label = __('Client ID');
+    // $field->columnWidth = 50;
+    // // $field->required = 1;
+    // $inputfields->add($field);
+
+    // // field app secret
+    // $field = $this->modules->get('InputfieldText');
+    // $field->name = 'clientSecret';
+    // $field->label = __('Client Secret');
+    // $field->columnWidth = 50;
+    // // $field->required = 1;
+    // $inputfields->add($field);
+
+    // // field redirectPage
+    // $field = $this->modules->get('InputfieldPageListSelect');
+    // $field->name = 'redirectPage';
+    // $field->label = __('Redirect to a specific page after getting authorization token.');
+    // $field->columnWidth = 50;
+    // // $field->required = 1;
+    // $inputfields->add($field);
+
+    // // field scope
+    // $field = $this->modules->get('InputfieldText');
+    // $field->name = 'scope';
+    // $field->label = __('Scope');
+    // $field->columnWidth = 50;
+    // // $field->required = 1;
+    // $inputfields->add($field);
+
+    // // expirationTime
+    // $field = $this->modules->get('InputfieldInteger');
+    // $field->name = 'expirationTime';
+    // $field->label = __('Access Token Expiration Time');
+    // $field->description = __('If the access token is expired, we\'ll need to send the user through the authorization process again.');
+    // $field->notes = __('- in seconds -');
+    // // $field->required = 1;
+    // $field->columnWidth = 50;
+    // $inputfields->add($field);
+
+    return $inputfields;
+  }
+
+}

@@ -1,0 +1,60 @@
+[
+  {
+    "name": "oauth_clients",
+    "fields": {
+      "client_id": "VARCHAR(80) NOT NULL PRIMARY KEY",
+      "client_secret": "VARCHAR(80)",
+      "redirect_uri": "VARCHAR(2000)",
+      "grant_types": "VARCHAR(80)",
+      "scope": "VARCHAR(4000)",
+      "user_id": "VARCHAR(80)"
+    }
+  },
+  {
+    "name": "oauth_access_tokens",
+    "fields": {
+      "access_token": "VARCHAR(40) NOT NULL PRIMARY KEY",
+      "client_id": "VARCHAR(80) NOT NULL",
+      "user_id": "VARCHAR(80)",
+      "expires": "TIMESTAMP NOT NULL",
+      "scope": "VARCHAR(4000)"
+    }
+  },
+  {
+    "name": "oauth_authorization_codes",
+    "fields": {
+      "authorization_code": "VARCHAR(40) NOT NULL PRIMARY KEY",
+      "client_id": "VARCHAR(80) NOT NULL",
+      "user_id": "VARCHAR(80)",
+      "redirect_uri": "VARCHAR(2000)",
+      "expires": "TIMESTAMP NOT NULL",
+      "scope": "VARCHAR(4000)",
+      "id_token": "VARCHAR(1000)"
+    }
+  },
+  {
+    "name": "oauth_refresh_tokens",
+    "fields": {
+      "refresh_token": "VARCHAR(40) NOT NULL PRIMARY KEY",
+      "client_id": "VARCHAR(80) NOT NULL",
+      "user_id": "VARCHAR(80)",
+      "expires": "TIMESTAMP NOT NULL",
+      "scope": "VARCHAR(4000)"
+    }
+  },
+  {
+    "name": "oauth_scopes",
+    "fields": {
+      "scope": "VARCHAR(80) NOT NULL PRIMARY KEY",
+      "is_default": "BOOLEAN"
+    }
+  },
+  {
+    "name": "oauth_jwt",
+    "fields": {
+      "client_id": "VARCHAR(80) NOT NULL",
+      "subject": "VARCHAR(80)",
+      "public_key": "VARCHAR(2000) NOT NULL"
+    }
+  }
+]
