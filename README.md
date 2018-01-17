@@ -2,16 +2,20 @@
 
 Integration of Brent Shaffer's [oauth2-server-php](https://github.com/bshaffer/oauth2-server-php) into ProcessWire 3.
 
-**Work in progrss! Do not use in production!**
+**Work in progress! Do not use in production!**
 
 ## Installation
 
 1. Install the module, it'll create some tables.
 2. Add the client directly to the database (table **oauth_clients**) *@maybe: set later via module settings?* 
-3. Add necessary templates, set **Content-Type** to `application/json` and disable automatic prepend and append file (tab *Files*):
-    - token
-    - authorize
-    - validate
+3. Add necessary templates
+    - settings:
+        - set **Content-Type** to `application/json` 
+        - disable automatic prepend and append file (tab *Files*)
+    - templates:
+        - token
+        - authorize
+        - validate
 4. Create a page for each template.
 
 ### Template content
@@ -20,19 +24,19 @@ Integration of Brent Shaffer's [oauth2-server-php](https://github.com/bshaffer/o
 
 **authorize.php**
 
-```
+```php
 echo $modules->get('Oauth2Server')->getAuthorizationCode();
 ```
 
 **token.php**
 
-```
+```php
 $modules->get('Oauth2Server')->getAccessToken();
 ```
 
 **validate.php**
 
-```
+```php
 echo $modules->get('Oauth2Server')->validateAccessToken();
 ```
 
@@ -52,7 +56,7 @@ echo $modules->get('Oauth2Server')->validateAccessToken();
 
 **GET**
 
-```
+```css
 curl 'http://pw.local/authorize/?response_type=code&client_id=testclient&state=xyz'
 ```
 
@@ -60,7 +64,7 @@ curl 'http://pw.local/authorize/?response_type=code&client_id=testclient&state=x
 
 **POST**
 
-```
+```css
 curl -u testclient:testpass http://pw.local/token/ -d 'grant_type=authorization_code&code={insert-code}'
 ```
 
@@ -68,7 +72,7 @@ curl -u testclient:testpass http://pw.local/token/ -d 'grant_type=authorization_
 
 **POST**
 
-```
+```css
 curl -u testclient:testpass http://pw.local/token/ -d 'grant_type=refresh_token&refresh_token={inser-refresh_token}'
 ```
 
