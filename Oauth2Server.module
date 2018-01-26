@@ -68,7 +68,7 @@ class Oauth2Server extends WireData implements Module, ConfigurableModule {
     $cleanedUp = $this->cache->get($cacheKey);
 
     // if not, clean up and renew cache!
-    if (!$cleanupDb) {
+    if (!isset($cleanupDb) || !$cleanupDb) {
       // DO CLEANUP
       $tables = array(
         'oauth_access_tokens',
