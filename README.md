@@ -116,6 +116,17 @@ curl http://pw.local/validate/ -d 'access_token={your-token}'
 
 ```
 
+**GET**
+
+```zsh
+curl 'http://pw.local/validate/?access_token={your-token}'
+
+{"success":true,"message":"You accessed my APIs!"}
+{"error":"invalid_token","error_description":"The access token provided has expired"}
+{"error":"invalid_token","error_description":"The access token provided is invalid"}
+
+```
+
 ### – get authorization code
 
 **GET**

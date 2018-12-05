@@ -37,7 +37,8 @@ class Oauth2Server extends WireData implements Module, ConfigurableModule {
       'summary' => 'Integration of Brent Shaffer\'s oauth2-server-php',
       'version' => 001,
       'href' => 'https://github.com/justb3a/processwire-oauth2server',
-      'icon' => 'handshake-o'
+      'icon' => 'handshake-o',
+      'singular' => true
     );
   }
 
@@ -188,6 +189,29 @@ class Oauth2Server extends WireData implements Module, ConfigurableModule {
     }
 
     return json_encode($res);
+  }
+
+  /**
+   * Get UserData including Access Token from Header Data
+   * returns an array with user data
+   *
+   * @return array or false
+   *
+   * $user = {
+   *  "access_token" => "1eacf2a69141ef7a85b7cf7b9cd8d63f9bed354d",
+   *  "client_id" => "hdc_app",
+   *  "user_id" => "41",
+   *  "expires" => 1519286410,
+   *  "scope" => null
+   * };
+   */
+  public function getAccessTokenDataFromHeader() {
+    $request = \OAuth2\Request::createFromGlobals();
+    if ($request) {
+      return $this->server->getAccessTokenData($request);
+    } else {
+      return false;
+    }
   }
 
   /**

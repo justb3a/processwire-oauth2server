@@ -25,13 +25,13 @@ class PdoStorage extends Storage {
   }
 
   /**
-    * @param string $username
+    * @param string $usernameOrId
     * @return array|bool
     */
-  public function getUser($username) {
-    $user = wire('users')->get("name=$username");
+  public function getUser($usernameOrId) {
+    $user = wire('users')->get("name=$usernameOrId");
 
-    return ($user instanceof NullPage) ? false : $user;
+    return ($user instanceof NullPage || $user->status == Page::statusHidden) ? false : $user;
   }
 
   /**
